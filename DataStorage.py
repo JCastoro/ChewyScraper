@@ -3,7 +3,7 @@ import re
 import pandas as pd
 
 
-def load_data():
+def load_data(rootURL):
     page = 1
     maxPages = 1
 
@@ -14,12 +14,14 @@ def load_data():
     data_content_list = []
     author_list = []
     date_list = []
+    media_list = []
 
     while page <= int(maxPages):
+
         #data_content_list_this_page = []
 
-        currPage = "https://www.chewy.com/app/product-reviews/" \
-                   "reload?partNumber=91615&id=119264&reviewSort=NEWEST&reviewFilter=ALL_STARS&pageNumber=" + str(page)
+        currPage = rootURL + str(page)
+
         curr_page_soup = pull_pages(currPage)
 
 
@@ -52,26 +54,34 @@ def load_data():
             date_list.append(date.getText())
 
 
-        #print(curr_page_soup.find("li", {"data-content-id": entry}).find("li", role="presentation"))
+        blocks = curr_page_soup.find_all("li", {"class": "js-content"})
+        # iterates through each block
+        for block in blocks:
+            if (block.find("li", role="presentation")):
+                media_list.append(process_image_text(block))
+            else:
+                media_list.append("None")
 
-        # creating dataFrame
-        # Date of review, UserName, star rating, review text, media as boolean
+
+        #print(curr_page_soup.find("li", {"data-content-id": entry}).find("li", role="presentation"))
 
         # iterating
         maxPages = get_number_of_pages(currPage)
         page += 1
 
+    # creating dataFrame
+        # Date of review, UserName, star rating, review text, media as boolean
 
     d = {
         "Date": pd.Series(date_list, index=data_content_list),
         "Author": pd.Series(author_list, index=data_content_list),
         "Star Rating": pd.Series(star_rating_list, index=data_content_list),
         "Review Text": pd.Series(review_list, index=data_content_list),
-
+        "media": pd.Series(media_list, index=data_content_list)
         }
 
     df = pd.DataFrame(d)
-    df.to_csv("ReviewData.csv", index=False)
+    # df.to_csv("ReviewData.csv", index=False)
     print(df)
 
 
@@ -105,3 +115,11 @@ def get_list_of_data_content(curr_page_soup, data_content_list):
         data_content_list.append(number)
 
     return data_content_list
+
+def process_image_text(js_content_block):
+    images = js_content_block.find_all("li", role="presentation")
+    for image in images:
+        to_process = str(image)
+        idx_of_url = to_process.find("url")
+        idx_of_endof_url = to_process.find(");")
+        return to_process[idx_of_url+4:idx_of_endof_url]
