@@ -77,11 +77,11 @@ def load_data(rootURL):
         "Author": pd.Series(author_list, index=data_content_list),
         "Star Rating": pd.Series(star_rating_list, index=data_content_list),
         "Review Text": pd.Series(review_list, index=data_content_list),
-        "media": pd.Series(media_list, index=data_content_list)
+        "Media": pd.Series(media_list, index=data_content_list)
         }
 
     df = pd.DataFrame(d)
-    # df.to_csv("ReviewData.csv", index=False)
+    df.to_csv("ReviewData.csv", index=False)
     print(df)
 
 
