@@ -16,10 +16,7 @@ def pull_pages(url):
     html = response.content
 
     soup = bs(html, "lxml")
-    all_reviews = soup.find_all("span", class_="ugc-list__review__display")
-    for review in all_reviews:
-        print(review.get_text(strip=True))
-        print("\n")
+    return soup
 
 
 def get_number_of_pages(url):
